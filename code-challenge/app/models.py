@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 
@@ -18,6 +19,7 @@ class Restaurant(db.Model):
             'name': self.name,
             'address': self.address,
             'pizzas': [pizza.to_dict() for pizza in pizzas]
+            # 'pizzas': [rp.pizza.to_dict() for rp in self.restaurant_pizzas]
         }
 
 class Pizza(db.Model):
@@ -48,3 +50,10 @@ class RestaurantPizza(db.Model):
 
     pizza_id = db.Column(db.Integer, db.ForeignKey('pizzas.id'))
     restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurants.id'))
+
+    @validates('price')
+    def validate_price(self, key, new_price):
+        if new_price < 1 or new_price > 30:
+            raise ValueError(f'Invalid price: {new_price}')
+        else:
+            return new_price
