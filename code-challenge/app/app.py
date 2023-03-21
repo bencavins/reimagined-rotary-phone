@@ -18,13 +18,16 @@ db.init_app(app)
 def home():
     return ''
 
-@app.route('/restaurants')
+@app.route('/restaurants', methods=['GET'])
 def restaurants():
-    return ''
+    restaurants = Restaurant.query.all()
+    rest_dicts = [r.to_dict() for r in restaurants]
+    return make_response(jsonify(rest_dicts), 200)
 
-@app.route('/restaurants/<int:id>')
+@app.route('/restaurants/<int:id>', methods=['GET'])
 def restaurant_by_id(id):
-    return ''
+    rest = Restaurant.query.get(id)
+    return make_response(jsonify(rest.to_dict()), 200)
 
 @app.route('/pizzas')
 def pizzas():
@@ -36,4 +39,4 @@ def resaurant_pizzas():
 
 
 if __name__ == '__main__':
-    app.run(port=5555)
+    app.run(port=3000)

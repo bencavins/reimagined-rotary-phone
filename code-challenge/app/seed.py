@@ -1,51 +1,43 @@
+#!/usr/bin/env python3
+from random import choice as rc
 from faker import Faker
-from random import choices, randint
-
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from app import app
-from models import db, Restaurant, RestaurantPizza, Pizza
+from models import db, Restaurant, Pizza, RestaurantPizza
 
+with app.app_context():
 
-fake = Faker()
-
-def seed_data():
-    Restaurant.query.delete()
+# This will delete any existing rows
+# so you can run the seed file multiple times without having duplicate entries in your database
+    print("Deleting data...")
     Pizza.query.delete()
+    Restaurant.query.delete()
     RestaurantPizza.query.delete()
 
-    restaurants = []
-    pizzas = []
-    restaurant_pizzas = []
-    ingredients = ['cheese', 'pepperoni', 'sausage', 'onions', 'peppers', 'black olives', 'ham', 'pineapple', 'anchovies', 'basil']
+    print("Creating restaurants...")
+    shack = Restaurant(name = "Karen's Pizza Shack", address = 'address1')
+    bistro = Restaurant(name = "Sanjay's Pizza", address = 'address2')
+    palace = Restaurant(name = "Kiki's Pizza", address = 'address3')
+    restaurants = [shack, bistro, palace]
 
-    for _ in range(15):
-        pizza = Pizza(
-            name=fake.first_name(),
-            ingredients=', '.join(choices(ingredients, k=3))
-        )
-        pizzas.append(pizza)
-    
-    for _ in range(5):
-        restaurant = Restaurant(
-            name=fake.company(),
-            address=fake.address()
-        )
-        restaurants.append(restaurant)
-    
-    for restaurant in restaurants:
-        rand_pizzas = choices(pizzas, k=randint(3, 5))
-        for pizza in rand_pizzas:
-            rp = RestaurantPizza(
-                price=randint(10, 25)
-            )
-            rp.pizza = pizza
-            rp.restaurant = restaurant
-            restaurant_pizzas.append(rp)
-    
-    db.session.add_all(restaurants + pizzas + restaurant_pizzas)
+    print("Creating pizzas...")
+
+
+    cheese = Pizza(name = "Emma", ingredients = "Dough, Tomato Sauce, Cheese")
+    pepperoni = Pizza(name = "Geri", ingredients = "Dough, Tomato Sauce, Cheese, Pepperoni")
+    california = Pizza(name = "Melanie", ingredients = "Dough, Sauce, Ricotta, Red peppers, Mustard")
+    pizzas = [cheese, pepperoni, california]
+
+    print("Creating RestaurantPizza...")
+
+    pr1 = RestaurantPizza(restaurant = shack, pizza = cheese, price = 1)
+    pr2 = RestaurantPizza(restaurant = bistro, pizza  = pepperoni, price = 4)
+    pr3 = RestaurantPizza(restaurant = palace, pizza = california, price = 5)
+    restaurantPizzas = [pr1, pr2, pr3]
+    db.session.add_all(restaurants)
+    db.session.add_all(pizzas)
+    db.session.add_all(restaurantPizzas)
     db.session.commit()
 
-
-if __name__ == '__main__':
-    with app.app_context():
-        seed_data()
+    print("Seeding done!")
